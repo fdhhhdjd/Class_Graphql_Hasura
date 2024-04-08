@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  backend:
+      container_name: backend
+      depends_on:
+          - postgresql
+      restart: always
+      build:
+          context: .
+          dockerfile: ./docker/dev/Dockerfile.dev
+      environment:
+          NODE_ENV: developer
+          NODE_OPTIONS: "--max-old-space-size=512"
+      ports:
+          - "${PORT_PRIVATE}:${PORT_PRIVATE}"
+      volumes:
+          - './src:/usr/src/app/src:ro' 
+      env_file:
+          - .env
+      command: npm run dev
+      networks:
+          - class-network
+      healthcheck:
+          test: ["CMD", "sh", "-c", "curl -sSf http://${NODE_HOST}:${PORT_PRIVATE}/api/v1 > /dev/null"]
+          interval: 60s
+          timeout: 2s
+          retries: 3  
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      PGDATA: "/data/postgres"
+    volumes:
+      - db_data/:/var/lib/postgresql/data/postgres:ro
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${POSTGRES_PORT_PUBLIC}:${POSTGRES_PORT_PRIVATE}"
+    env_file:
+      - .env
+    networks:
+      - class-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  graphql-engine:
+      image: hasura/graphql-engine:v2.38.0
+      depends_on:
+          - postgresql
+          - backend
+      restart: always
+      ports:
+      - "${HASURA_PORT_PUBLIC}:${HASURA_PORT_PRIVATE}"
+      environment:
+          HASURA_GRAPHQL_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT_PRIVATE}/${POSTGRES_DB}
+          PG_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT_PRIVATE}/${POSTGRES_DB}
+          ## enable the console served by server
+          HASURA_GRAPHQL_ENABLE_CONSOLE: "${HASURA_GRAPHQL_ENABLE_CONSOLE}" # set to "false" to disable console
+          ## enable debugging mode. It is recommended to disable this in production
+          HASURA_GRAPHQL_DEV_MODE: "${HASURA_GRAPHQL_DEV_MODE}"
+          HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+          ## uncomment next line to set an admin secret
+          HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
+          ## JWT
+          HASURA_GRAPHQL_JWT_SECRET: '{"type": "${JWT_TYPE}", "key": "${JWT_KEY}"}'
+          ## allow unauth user
+          HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+          ## cache plan 0-65535
+          ## HASURA_GRAPHQL_QUERY_PLAN_CACHE_SIZE: 1000
+          HASURA_GRAPHQL_INFER_FUNCTION_PERMISSIONS: "${HASURA_GRAPHQL_PERMISSTION}"
+          ## admin web hook
+          GRAPHQL_ENGINE_BACKEND_API_URL: "${BACKEND_API_URL}"
+      networks: 
+          - class-network
+      env_file:
+          - .env
+###* NETWORD GENERAL ###
+networks:
+  class-network:
+    driver: bridge
+volumes:
+  db_data:
+    driver: local
+
