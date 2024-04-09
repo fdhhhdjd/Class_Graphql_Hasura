@@ -1,3 +1,10 @@
+# Solution
+1. Database control <=>  Admirer
+2. Event Trigger, cron 
+3. Query graphql => Query PG4
+<!-- curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash -->
+<!-- hasura init --endpoint http://localhost:8080 --admin-secret class_docker -->
+<!-- cd metadata && hasura metadata apply -->
 ## GET
 ```graphql
 query {
@@ -108,33 +115,35 @@ type Mutation {
     CreateUser(input: SignupInput!): SignupOutput
 }
 
-type User {
-    id: String!
-    fullname: String!
-    email: String!
+input SignupInput {
+  fullname: String!
+  email: String!
 }
 
 type SignupOutput {
   status: Int!
   message: String!
   option: String!
-  metadata: String!
+  metadata: User!
 }
 
-
-input SignupInput {
-    fullname: String!
-    email: String!
+type User {
+  fullname: String!
+  email: String!
 }
 
-
-mutation {
-  CreateUser(input: {email: "a@gmail.com", fullname: "ádasdasd"}) {
+mutation MyMutation {
+  CreateUser(input: {email: "q@gmail.com", fullname: "123123"}) {
     message
     status
     option
+    metadata {
+      email
+      fullname
+    }
   }
 }
+
 
 
 ```

@@ -9,8 +9,15 @@ class LoginController {
     }).send(res);
   }
   async signup(req, res, ___) {
+    const  header = req.headers
+    const { input } = req.body.input;
     new SuccessResponse({
-      metadata: await authService.signup(req.body),
+      metadata: await authService.signup(input,header),
+    }).send(res);
+  }
+  async eventCron(req, res, ___) {
+    new SuccessResponse({
+      metadata: await authService.eventCron(req.body.payload),
     }).send(res);
   }
 }

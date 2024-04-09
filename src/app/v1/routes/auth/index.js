@@ -9,5 +9,6 @@ const router = express.Router();
 
 router.post("/login", asyncHandler(loginController.login));
 router.post("/signup", asyncHandler(loginController.signup));
+router.post("/event", asyncHandler(loginController.eventCron));
 
 module.exports = router;

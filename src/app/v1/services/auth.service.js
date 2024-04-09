@@ -14,7 +14,11 @@ class AuthService {
     return data;
   }
   async signup(data) {
+    console.log(data);
     return data;
+  }
+  async eventCron(data) {
+    console.log('==== eventCron ====',data);
   }
 }
 

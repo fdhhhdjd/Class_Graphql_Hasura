@@ -1,0 +1,21 @@
+type Mutation {
+    CreateUser(input: SignUpInput!): SignUpOutput
+}
+
+type User {
+    fullname: String!
+    email: String!
+}
+
+type SignUpOutput {
+    status: Int!
+    message: String!
+    option: String
+    metadata: User
+}
+
+input SignUpInput {
+    fullname: String!
+    email: String!
+}
+

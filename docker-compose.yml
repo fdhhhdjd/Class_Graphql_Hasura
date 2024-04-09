@@ -52,13 +52,18 @@ services:
       retries: 3
 
   graphql-engine:
-      image: hasura/graphql-engine:v2.38.0
+      container_name: graphql-engine
+      build:
+          context: .
+          dockerfile: ./docker/hasura/Dockerfile
       depends_on:
           - postgresql
           - backend
       restart: always
+      volumes:
+      - ./hasura:/metadata
       ports:
-      - "${HASURA_PORT_PUBLIC}:${HASURA_PORT_PRIVATE}"
+          - "${HASURA_PORT_PUBLIC}:${HASURA_PORT_PRIVATE}"
       environment:
           HASURA_GRAPHQL_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT_PRIVATE}/${POSTGRES_DB}
           PG_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT_PRIVATE}/${POSTGRES_DB}
@@ -70,18 +75,23 @@ services:
           ## uncomment next line to set an admin secret
           HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
           ## JWT
-          HASURA_GRAPHQL_JWT_SECRET: '{"type": "${JWT_TYPE}", "key": "${JWT_KEY}"}'
+          # HASURA_GRAPHQL_JWT_SECRET: '{"type": "${JWT_TYPE}", "key": "${JWT_KEY}"}'
+          HASURA_GRAPHQL_JWT_SECRET: '{"type":"${JWT_TYPE}","jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com", "audience": "react-admin-low-code", "issuer": "https://securetoken.google.com/react-admin-low-code"}'
           ## allow unauth user
           HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
           ## cache plan 0-65535
           ## HASURA_GRAPHQL_QUERY_PLAN_CACHE_SIZE: 1000
           HASURA_GRAPHQL_INFER_FUNCTION_PERMISSIONS: "${HASURA_GRAPHQL_PERMISSTION}"
+          ## Access to the domain`
+          HASURA_GRAPHQL_CORS_DOMAIN: "*"
           ## admin web hook
           GRAPHQL_ENGINE_BACKEND_API_URL: "${BACKEND_API_URL}"
-      networks: 
-          - class-network
       env_file:
           - .env
+      networks: 
+          - class-network
+   
+
 ###* NETWORD GENERAL ###
 networks:
   class-network:
