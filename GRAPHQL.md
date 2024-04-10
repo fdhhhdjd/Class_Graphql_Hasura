@@ -2,6 +2,7 @@
 1. Database control <=>  Admirer
 2. Event Trigger, cron 
 3. Query graphql => Query PG4
+
 <!-- curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash -->
 <!-- hasura init --endpoint http://localhost:8080 --admin-secret class_docker -->
 <!-- cd metadata && hasura metadata apply -->
