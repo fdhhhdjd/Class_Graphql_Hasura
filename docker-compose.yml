@@ -39,6 +39,8 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - .env
+    ports:
+      - "${POSTGRES_PORT_PUBLIC}:${POSTGRES_PORT_PRIVATE}"      
     networks:
       - class-network
     healthcheck:
