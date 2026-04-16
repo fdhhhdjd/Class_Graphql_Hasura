@@ -1,7 +1,3 @@
-<div align="center">
-
-<img src="https://res.cloudinary.com/ecommerce2021/image/upload/v1659065987/avatar/logo_begsn1.png" width="120" alt="Logo" />
-
 # 🔁 Class GraphQL Hasura
 
 **A full-stack backend course project demonstrating real-time GraphQL APIs with Hasura, Node.js, and PostgreSQL — all containerized with Docker.**
